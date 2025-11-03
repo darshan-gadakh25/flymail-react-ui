@@ -211,7 +211,7 @@ export default function AuthModal({ mode, onClose, onSwitchMode }) {
                 />
               </div>
 
-              <div>
+              {/* <div>
                 <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#333' }}>
                   Role
                 </label>
@@ -230,7 +230,7 @@ export default function AuthModal({ mode, onClose, onSwitchMode }) {
                   <option value="user">User</option>
                   <option value="admin">Admin</option>
                 </select>
-              </div>
+              </div> */}
             </>
           )}
 

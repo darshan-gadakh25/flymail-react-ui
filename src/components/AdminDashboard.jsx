@@ -28,9 +28,9 @@ export default function AdminDashboard() {
 
       const stats = {
         totalUsers: userData.length,
-        activeUsers: userData.filter(u => u.isActive !== false).length,
+        activeUsers: userData.filter(u => (u.isActive !== false && u.status !== 'inactive')).length,
         adminUsers: userData.filter(u => u.role === 'admin').length,
-        inactiveUsers: userData.filter(u => u.isActive === false).length
+        inactiveUsers: userData.filter(u => (u.isActive === false || u.status === 'inactive')).length
       };
       setStats(stats);
     } catch (error) {
@@ -43,9 +43,29 @@ export default function AdminDashboard() {
 
   const handleToggleActive = async (userId) => {
     try {
-      await adminService.toggleActive(userId);
-      toast.success('User status updated successfully');
-      loadAdminData();
+      const response = await adminService.toggleActive(userId);
+      console.log('Toggle response:', response);
+      
+      // Update the user in the local state immediately
+      setUsers(prevUsers => 
+        prevUsers.map(user => {
+          if (user._id === userId) {
+            const newStatus = response.user?.status === 'active';
+            return { 
+              ...user, 
+              isActive: newStatus,
+              status: response.user?.status 
+            };
+          }
+          return user;
+        })
+      );
+      
+      const statusText = response.user?.status === 'active' ? 'activated' : 'deactivated';
+      toast.success(`User ${statusText} successfully`);
+      
+      // Also reload data to ensure consistency
+      setTimeout(() => loadAdminData(), 500);
     } catch (error) {
       console.error('Error toggling user status:', error);
       toast.error('Failed to update user status');
@@ -67,12 +87,52 @@ export default function AdminDashboard() {
 
   const handleViewUserEmails = async (userId) => {
     try {
+      console.log('Fetching emails for user:', userId);
+      
+      // Clear previous data first
+      setUserEmails([]);
+      setSelectedUser(null);
+      
       const response = await adminService.viewUserMail(userId);
-      setUserEmails(response.data || response.emails || []);
-      setSelectedUser(users.find(u => u._id === userId));
+      console.log('Full API response:', response);
+      console.log('Response type:', typeof response);
+      console.log('Response keys:', Object.keys(response || {}));
+      
+      let emails = [];
+      
+      if (response) {
+        // Combine inbox and sent emails
+        const inboxEmails = response.inbox?.mails || [];
+        const sentEmails = response.sent?.mails || [];
+        
+        emails = [...inboxEmails, ...sentEmails];
+        
+        console.log('Inbox emails:', inboxEmails);
+        console.log('Sent emails:', sentEmails);
+        console.log('Combined emails:', emails);
+      }
+      
+      console.log('Final emails array:', emails);
+      console.log('Emails length:', emails.length);
+      
+      // Force state update
+      const selectedUserData = users.find(u => u._id === userId);
+      console.log('Selected user:', selectedUserData);
+      
+      // Set state with a small delay to ensure proper rendering
+      setTimeout(() => {
+        setUserEmails([...emails]); // Create new array reference
+        setSelectedUser(selectedUserData);
+      }, 100);
+      
+      if (emails.length === 0) {
+        toast.info('No emails found for this user');
+      } else {
+        toast.success(`Found ${emails.length} emails`);
+      }
     } catch (error) {
       console.error('Error loading user emails:', error);
-      toast.error('Failed to load user emails');
+      toast.error(error.response?.data?.message || 'Failed to load user emails');
     }
   };
 
@@ -232,14 +292,14 @@ export default function AdminDashboard() {
                   </td>
                   <td style={{ padding: '15px' }}>
                     <span style={{
-                      background: userData.isActive ? '#10b981' : '#ef4444',
+                      background: (userData.isActive !== false && userData.status !== 'inactive') ? '#10b981' : '#ef4444',
                       color: '#fff',
                       padding: '4px 12px',
                       borderRadius: '12px',
                       fontSize: '12px',
                       fontWeight: '500'
                     }}>
-                      {userData.isActive ? 'Active' : 'Inactive'}
+                      {(userData.isActive !== false && userData.status !== 'inactive') ? 'Active' : 'Inactive'}
                     </span>
                   </td>
                   <td style={{ padding: '15px', color: '#666', fontSize: '14px' }}>
@@ -265,7 +325,7 @@ export default function AdminDashboard() {
                         onClick={() => handleToggleActive(userData._id)}
                         style={{
                           padding: '6px 12px',
-                          background: userData.isActive ? '#f59e0b' : '#10b981',
+                          background: (userData.isActive !== false && userData.status !== 'inactive') ? '#f59e0b' : '#10b981',
                           color: '#fff',
                           border: 'none',
                           borderRadius: '6px',
@@ -273,7 +333,7 @@ export default function AdminDashboard() {
                           cursor: 'pointer'
                         }}
                       >
-                        {userData.isActive ? 'Deactivate' : 'Activate'}
+                        {(userData.isActive !== false && userData.status !== 'inactive') ? 'Deactivate' : 'Activate'}
                       </button>
                       <button
                         onClick={() => handleDeleteUser(userData._id)}
@@ -308,19 +368,21 @@ export default function AdminDashboard() {
 
       {/* User Emails Modal */}
       {selectedUser && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(0,0,0,0.5)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000,
-          padding: '20px'
-        }}>
+        <div 
+          key={selectedUser._id} 
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0,0,0,0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+            padding: '20px'
+          }}>
           <div style={{
             background: '#fff',
             borderRadius: '12px',
@@ -334,25 +396,40 @@ export default function AdminDashboard() {
               borderBottom: '1px solid #e5e7eb',
               display: 'flex',
               justifyContent: 'space-between',
-              alignItems: 'center'
+              alignItems: 'center',
+              background: '#f8f9fa'
             }}>
-              <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '600' }}>
-                {selectedUser.name}'s Emails ({userEmails.length})
-              </h3>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '600', color: '#333' }}>
+                  📧 {selectedUser.name}'s Emails
+                </h3>
+                <p style={{ margin: '4px 0 0 0', fontSize: '14px', color: '#666' }}>
+                  {userEmails.length} {userEmails.length === 1 ? 'email' : 'emails'} found
+                </p>
+              </div>
               <button
-                onClick={() => setSelectedUser(null)}
+                onClick={() => {
+                  setSelectedUser(null);
+                  setUserEmails([]);
+                }}
                 style={{
-                  background: 'transparent',
+                  background: '#ef4444',
+                  color: '#fff',
                   border: 'none',
-                  fontSize: '20px',
+                  borderRadius: '6px',
+                  padding: '8px 12px',
+                  fontSize: '14px',
                   cursor: 'pointer',
-                  color: '#666'
+                  fontWeight: '500'
                 }}
               >
-                ×
+                Close
               </button>
             </div>
             <div style={{ padding: '20px' }}>
+              <div style={{ marginBottom: '15px', padding: '10px', background: '#f0f7ff', borderRadius: '6px', fontSize: '12px', color: '#666' }}>
+                Debug: {userEmails.length} emails loaded for {selectedUser.name}
+              </div>
               {userEmails.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
                   <div style={{ fontSize: '48px', marginBottom: '20px' }}>📭</div>
@@ -360,32 +437,33 @@ export default function AdminDashboard() {
                   <p>This user hasn't sent or received any emails yet.</p>
                 </div>
               ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '400px', overflowY: 'auto' }}>
                   {userEmails.map((email, index) => (
                     <div
-                      key={email._id || index}
+                      key={email._id || email.id || index}
                       style={{
                         padding: '16px',
                         border: '1px solid #e5e7eb',
                         borderRadius: '8px',
-                        background: email.isRead ? '#fff' : '#f0f7ff'
+                        background: (email.isRead || email.read) ? '#fff' : '#f0f7ff'
                       }}
                     >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                        <div style={{ flex: 1 }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-                            <span style={{ fontWeight: '600', color: '#333', fontSize: '14px' }}>
-                              From: {email.from}
+                      <div className="flex-responsive" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '15px' }}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px', flexWrap: 'wrap' }}>
+                            <span style={{ fontWeight: '600', color: '#0b6efd', fontSize: '14px' }}>
+                              From: {email.sender?.name || email.sender?.email || email.from || 'Unknown'}
                             </span>
-                            <span style={{ fontWeight: '600', color: '#333', fontSize: '14px' }}>
-                              To: {email.to}
+                            <span style={{ fontWeight: '600', color: '#10b981', fontSize: '14px' }}>
+                              To: {email.receiver?.name || email.receiver?.email || email.to || 'Unknown'}
                             </span>
-                            {!email.isRead && (
+                            {!(email.isRead || email.read) && (
                               <span style={{
                                 width: '8px',
                                 height: '8px',
-                                background: '#3b82f6',
-                                borderRadius: '50%'
+                                background: '#ef4444',
+                                borderRadius: '50%',
+                                flexShrink: 0
                               }} />
                             )}
                           </div>
@@ -393,25 +471,39 @@ export default function AdminDashboard() {
                             margin: '0 0 8px 0',
                             fontSize: '16px',
                             fontWeight: '600',
-                            color: '#333'
+                            color: '#333',
+                            wordBreak: 'break-word'
                           }}>
-                            {email.subject || 'No Subject'}
+                            {email.subject || email.title || 'No Subject'}
                           </h4>
                           <p style={{
                             margin: 0,
                             color: '#666',
                             fontSize: '14px',
-                            lineHeight: '1.4'
+                            lineHeight: '1.4',
+                            wordBreak: 'break-word'
                           }}>
-                            {email.body?.substring(0, 150)}...
+                            {(email.body || email.content || email.message || 'No content')?.substring(0, 200)}
+                            {(email.body || email.content || email.message || '').length > 200 ? '...' : ''}
                           </p>
                         </div>
-                        <div style={{ textAlign: 'right', marginLeft: '20px' }}>
-                          <div style={{ color: '#666', fontSize: '12px' }}>
-                            {new Date(email.createdAt).toLocaleDateString()}
+                        <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                          <div style={{ color: '#666', fontSize: '12px', marginBottom: '4px' }}>
+                            {new Date(email.createdAt || email.date || email.timestamp || Date.now()).toLocaleDateString()}
                           </div>
                           <div style={{ color: '#666', fontSize: '11px' }}>
-                            {new Date(email.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            {new Date(email.createdAt || email.date || email.timestamp || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </div>
+                          <div style={{ 
+                            marginTop: '8px',
+                            padding: '2px 6px',
+                            background: (email.isRead || email.read) ? '#10b981' : '#ef4444',
+                            color: '#fff',
+                            fontSize: '10px',
+                            borderRadius: '4px',
+                            textAlign: 'center'
+                          }}>
+                            {(email.isRead || email.read) ? 'Read' : 'Unread'}
                           </div>
                         </div>
                       </div>
