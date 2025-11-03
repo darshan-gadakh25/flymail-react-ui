@@ -1,0 +1,100 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background: #f4f7fb;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .layout-main {
+    margin-left: 0 !important;
+  }
+  
+  .grid-responsive {
+    grid-template-columns: 1fr !important;
+    gap: 15px !important;
+  }
+  
+  .flex-responsive {
+    flex-direction: column !important;
+  }
+  
+  .hide-mobile {
+    display: none !important;
+  }
+  
+  .padding-mobile {
+    padding: 15px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .text-responsive {
+    font-size: 14px !important;
+  }
+  
+  .button-responsive {
+    padding: 8px 16px !important;
+    font-size: 14px !important;
+  }
+  
+  .title-mobile {
+    font-size: 24px !important;
+  }
+  
+  .padding-small {
+    padding: 10px !important;
+  }
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
