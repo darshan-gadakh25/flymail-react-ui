@@ -19,6 +19,7 @@ body {
   min-width: 320px;
   min-height: 100vh;
   background: #f4f7fb;
+  overflow-x: hidden;
 }
 
 #root {
@@ -60,6 +61,39 @@ a {
   .padding-mobile {
     padding: 15px !important;
   }
+  
+  /* Navigation responsive */
+  nav > div {
+    flex-direction: column !important;
+    gap: 15px !important;
+  }
+  
+  nav > div > div:nth-child(2) {
+    display: none !important;
+  }
+  
+  /* Main content responsive */
+  main {
+    padding: 60px 15px !important;
+  }
+  
+  main h1 {
+    font-size: 32px !important;
+    line-height: 1.2 !important;
+  }
+  
+  main p {
+    font-size: 18px !important;
+  }
+  
+  /* Features section responsive */
+  section {
+    padding: 40px 15px !important;
+  }
+  
+  section h2 {
+    font-size: 28px !important;
+  }
 }
 
 @media (max-width: 480px) {
@@ -79,6 +113,55 @@ a {
   .padding-small {
     padding: 10px !important;
   }
+  
+  /* Mobile specific styles */
+  body {
+    font-size: 14px;
+  }
+  
+  main h1 {
+    font-size: 24px !important;
+  }
+  
+  main p:first-of-type {
+    font-size: 16px !important;
+  }
+  
+  main p:last-of-type {
+    font-size: 14px !important;
+  }
+  
+  section h2 {
+    font-size: 22px !important;
+  }
+  
+  /* Modal responsive */
+  .auth-modal {
+    padding: 15px !important;
+    margin: 10px !important;
+  }
+  
+  .auth-modal h2 {
+    font-size: 24px !important;
+  }
+  
+  .auth-modal input,
+  .auth-modal button {
+    font-size: 16px !important;
+    padding: 12px !important;
+  }
+  
+  /* Toast responsive */
+  .toast-container {
+    top: 10px !important;
+    right: 10px !important;
+    left: 10px !important;
+  }
+  
+  .toast {
+    min-width: auto !important;
+    width: 100% !important;
+  }
 }
 
 /* Scrollbar Styling */
@@ -97,4 +180,34 @@ a {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #a8a8a8;
+}
+
+/* Utility classes for responsive design */
+.mobile-hidden {
+  display: block;
+}
+
+.mobile-visible {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .mobile-hidden {
+    display: none !important;
+  }
+  
+  .mobile-visible {
+    display: block !important;
+  }
+}
+
+/* Prevent horizontal scroll on mobile */
+@media (max-width: 768px) {
+  html, body {
+    overflow-x: hidden;
+  }
+  
+  * {
+    max-width: 100%;
+  }
 }

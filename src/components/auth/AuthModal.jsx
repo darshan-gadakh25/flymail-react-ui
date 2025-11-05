@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '../Toast';
@@ -13,8 +13,17 @@ export default function AuthModal({ mode, onClose, onSwitchMode }) {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const { login, register } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const isMobile = windowWidth <= 480;
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -28,16 +37,31 @@ export default function AuthModal({ mode, onClose, onSwitchMode }) {
 
     try {
       if (mode === 'login') {
+        // Validate email and password before sending request
+        if (!formData.email || !formData.password) {
+          const errorMsg = 'Please enter both email and password';
+          setError(errorMsg);
+          toast.error(errorMsg);
+          setLoading(false);
+          return;
+        }
+        
         await login({ email: formData.email, password: formData.password });
         toast.success('Login successful!');
+        onClose();
+        navigate('/dashboard');
       } else {
         if (formData.password !== formData.confirmPassword) {
-          toast.error('Passwords do not match');
+          const errorMsg = 'Passwords do not match';
+          setError(errorMsg);
+          toast.error(errorMsg);
           setLoading(false);
           return;
         }
         if (formData.password.length < 6) {
-          toast.error('Password must be at least 6 characters');
+          const errorMsg = 'Password must be at least 6 characters';
+          setError(errorMsg);
+          toast.error(errorMsg);
           setLoading(false);
           return;
         }
@@ -48,13 +72,29 @@ export default function AuthModal({ mode, onClose, onSwitchMode }) {
           role: formData.role
         });
         toast.success('Registration successful!');
+        onClose();
+        navigate('/dashboard');
       }
-      onClose();
-      navigate('/dashboard');
     } catch (err) {
-      const errorMessage = err.response?.data?.message || err.message || 'An error occurred';
-      toast.error(errorMessage);
+      console.error('Auth error:', err);
+      let errorMessage = 'An error occurred';
+      
+      if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      } else if (err.response?.data?.error) {
+        errorMessage = err.response.data.error;
+      } else if (err.message) {
+        errorMessage = err.message;
+      } else if (err.response?.status === 401) {
+        errorMessage = 'Invalid email or password';
+      } else if (err.response?.status === 400) {
+        errorMessage = 'Invalid request. Please check your input.';
+      } else if (err.response?.status >= 500) {
+        errorMessage = 'Server error. Please try again later.';
+      }
+      
       setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -72,16 +112,18 @@ export default function AuthModal({ mode, onClose, onSwitchMode }) {
       alignItems: 'center',
       justifyContent: 'center',
       zIndex: 1000,
-      padding: '20px'
+      padding: isMobile ? '10px' : '20px'
     }}>
       <div style={{
         background: '#fff',
         borderRadius: '12px',
-        padding: '40px',
+        padding: isMobile ? '20px' : '40px',
         width: '100%',
         maxWidth: '450px',
         position: 'relative',
-        boxShadow: '0 10px 30px rgba(0,0,0,0.2)'
+        boxShadow: '0 10px 30px rgba(0,0,0,0.2)',
+        maxHeight: '90vh',
+        overflowY: 'auto'
       }}>
         <button
           onClick={onClose}

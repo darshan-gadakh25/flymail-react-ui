@@ -17,12 +17,26 @@ instance.interceptors.request.use((config) => {
 instance.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      // Token expired or invalid
+    // Only redirect on 401 if we have a token (authenticated user)
+    if (error.response?.status === 401 && localStorage.getItem('token')) {
+      // Token expired or invalid for authenticated user
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      window.location.href = '/login';
+      window.location.href = '/';
     }
+    
+    // Enhance error messages for better UX
+    if (error.response?.data) {
+      const errorData = error.response.data;
+      if (typeof errorData === 'string') {
+        error.message = errorData;
+      } else if (errorData.message) {
+        error.message = errorData.message;
+      } else if (errorData.error) {
+        error.message = errorData.error;
+      }
+    }
+    
     return Promise.reject(error);
   }
 );
