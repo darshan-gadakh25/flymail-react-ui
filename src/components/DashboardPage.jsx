@@ -31,13 +31,45 @@ export default function DashboardPage({ activeSection = 'dashboard', onSectionCh
         default:
           response = await mailService.getInbox();
       }
-      setMails(response.data || response.mails || []);
+      setMails(response.mails || response.data || []);
     } catch (error) {
       console.error('Error loading mails:', error);
-      toast.error(`Failed to load ${section}`);
+      toast.error(error.response?.data?.message || `Failed to load ${section}`);
       setMails([]);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleMarkAsRead = async (mailId) => {
+    try {
+ 
+      await mailService.markAsRead(mailId);
+      toast.success('Mail marked as read');
+      setMails(prevMails => 
+        prevMails.map(mail => 
+          mail._id === mailId ? { ...mail, isRead: true, read: true } : mail
+        )
+      );
+    } catch (error) {
+      console.error('Error marking mail as read:', error);
+      toast.error(error.response?.data?.message || 'Failed to mark as read');
+    }
+  };
+
+  const handleDeleteMail = async (mailId) => {
+    if (!window.confirm('Are you sure you want to delete this email?')) {
+      return;
+    }
+    
+    try {
+      await mailService.deleteMail(mailId);
+      toast.success('Mail deleted successfully');
+      // Remove from local state
+      setMails(prevMails => prevMails.filter(mail => mail._id !== mailId));
+    } catch (error) {
+      console.error('Error deleting mail:', error);
+      toast.error(error.response?.data?.message || 'Failed to delete mail');
     }
   };
 
@@ -149,19 +181,44 @@ export default function DashboardPage({ activeSection = 'dashboard', onSectionCh
                   <div style={{ color: '#666', fontSize: '11px', marginBottom: '8px' }}>
                     {new Date(mail.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </div>
-                  <button
-                    style={{
-                      background: '#ef4444',
-                      color: '#fff',
-                      border: 'none',
-                      padding: '4px 8px',
-                      borderRadius: '4px',
-                      fontSize: '12px',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Delete
-                  </button>
+                  <div style={{ display: 'flex', gap: '5px', flexDirection: 'column' }}>
+                    {activeSection === 'inbox' && !mail.isRead && !mail.read && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleMarkAsRead(mail._id);
+                        }}
+                        style={{
+                          background: '#10b981',
+                          color: '#fff',
+                          border: 'none',
+                          padding: '4px 8px',
+                          borderRadius: '4px',
+                          fontSize: '12px',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        Mark Read
+                      </button>
+                    )}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteMail(mail._id);
+                      }}
+                      style={{
+                        background: '#ef4444',
+                        color: '#fff',
+                        border: 'none',
+                        padding: '4px 8px',
+                        borderRadius: '4px',
+                        fontSize: '12px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>

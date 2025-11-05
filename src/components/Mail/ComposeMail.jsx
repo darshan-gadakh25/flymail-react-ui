@@ -22,11 +22,16 @@ export default function ComposeMail({ onClose, draftMail = null, onSent }) {
     
     try {
       const mailData = {
-        ...formData,
+        toEmail: formData.toEmail,
+        subject: formData.subject,
+        body: formData.body,
         isDraft: true,
       };
       
-      await mailService.composeMail(mailData);
+      console.log('Saving draft data:', mailData);
+      const response = await mailService.composeMail(mailData);
+      console.log('Draft saved response:', response);
+      
       setMessage('Draft saved successfully!');
       
       setTimeout(() => {
@@ -34,7 +39,9 @@ export default function ComposeMail({ onClose, draftMail = null, onSent }) {
         if (onSent) onSent();
       }, 1500);
     } catch (error) {
-      setMessage(error.response?.data?.message || 'Failed to save draft');
+      console.error('Error saving draft:', error);
+      const errorMessage = error.response?.data?.message || error.response?.data?.error || error.message || 'Failed to save draft';
+      setMessage(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -53,11 +60,16 @@ export default function ComposeMail({ onClose, draftMail = null, onSent }) {
 
     try {
       const mailData = {
-        ...formData,
+        toEmail: formData.toEmail,
+        subject: formData.subject,
+        body: formData.body,
         isDraft: false,
       };
       
-      await mailService.composeMail(mailData);
+      console.log('Sending mail data:', mailData);
+      const response = await mailService.composeMail(mailData);
+      console.log('Mail sent response:', response);
+      
       setMessage('Email sent successfully!');
       
       setTimeout(() => {
@@ -65,7 +77,9 @@ export default function ComposeMail({ onClose, draftMail = null, onSent }) {
         if (onSent) onSent();
       }, 1500);
     } catch (error) {
-      setMessage(error.response?.data?.message || 'Failed to send email');
+      console.error('Error sending mail:', error);
+      const errorMessage = error.response?.data?.message || error.response?.data?.error || error.message || 'Failed to send email';
+      setMessage(errorMessage);
     } finally {
       setLoading(false);
     }

@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { toast } from '../Toast';
 import * as mailService from '../../services/mailService';
 
 export default function Sidebar({ isOpen, onToggle, activeSection, onSectionChange }) {
   const { user } = useAuth();
   const [showCompose, setShowCompose] = useState(false);
   const [mailCounts, setMailCounts] = useState({ inbox: 0, sent: 0, drafts: 0 });
+  const [formData, setFormData] = useState({ to: '', subject: '', body: '' });
+  const [sending, setSending] = useState(false);
   const isAdmin = user?.role === 'admin';
 
   useEffect(() => {
@@ -54,6 +57,74 @@ export default function Sidebar({ isOpen, onToggle, activeSection, onSectionChan
     }
     // Refresh counts when switching sections
     setTimeout(() => loadMailCounts(), 500);
+  };
+
+  const handleSend = async (e) => {
+    e.preventDefault();
+    console.log('Sidebar compose send clicked with:', formData);
+    
+    if (!formData.to || !formData.subject || !formData.body) {
+      toast.error('Please fill in all fields');
+      return;
+    }
+
+    setSending(true);
+    try {
+      const mailData = {
+        toEmail: formData.to,
+        subject: formData.subject,
+        body: formData.body,
+        isDraft: false
+      };
+      
+      await mailService.composeMail(mailData);
+      toast.success('Email sent successfully!');
+      setShowCompose(false);
+      setFormData({ to: '', subject: '', body: '' });
+      loadMailCounts();
+    } catch (error) {
+      console.error('Error sending mail from sidebar:', error);
+      toast.error(error.response?.data?.message || 'Failed to send email');
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const handleSaveDraft = async () => {
+    console.log('Sidebar save draft clicked with:', formData);
+    
+    if (!formData.to && !formData.subject && !formData.body) {
+      toast.error('Please enter some content to save as draft');
+      return;
+    }
+
+    setSending(true);
+    try {
+      const mailData = {
+        toEmail: formData.to,
+        subject: formData.subject,
+        body: formData.body,
+        isDraft: true
+      };
+      
+      console.log('Saving draft from sidebar:', mailData);
+      await mailService.composeMail(mailData);
+      toast.success('Draft saved successfully!');
+      setShowCompose(false);
+      setFormData({ to: '', subject: '', body: '' });
+      loadMailCounts();
+    } catch (error) {
+      console.error('Error saving draft from sidebar:', error);
+      toast.error(error.response?.data?.message || 'Failed to save draft');
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const handleCloseCompose = () => {
+    setShowCompose(false);
+    setFormData({ to: '', subject: '', body: '' });
+    setSending(false);
   };
 
   return (
@@ -191,7 +262,7 @@ export default function Sidebar({ isOpen, onToggle, activeSection, onSectionChan
             }}>
               <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '600' }}>Compose Email</h3>
               <button
-                onClick={() => setShowCompose(false)}
+                onClick={handleCloseCompose}
                 style={{
                   background: 'transparent',
                   border: 'none',
@@ -204,10 +275,13 @@ export default function Sidebar({ isOpen, onToggle, activeSection, onSectionChan
               </button>
             </div>
             <div style={{ padding: '20px' }}>
-              <form style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+              <form onSubmit={handleSend} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                 <input
                   type="email"
                   placeholder="To"
+                  value={formData.to}
+                  onChange={(e) => setFormData({ ...formData, to: e.target.value })}
+                  required
                   style={{
                     padding: '12px',
                     border: '1px solid #ddd',
@@ -218,6 +292,9 @@ export default function Sidebar({ isOpen, onToggle, activeSection, onSectionChan
                 <input
                   type="text"
                   placeholder="Subject"
+                  value={formData.subject}
+                  onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+                  required
                   style={{
                     padding: '12px',
                     border: '1px solid #ddd',
@@ -228,6 +305,9 @@ export default function Sidebar({ isOpen, onToggle, activeSection, onSectionChan
                 <textarea
                   placeholder="Write your message..."
                   rows="10"
+                  value={formData.body}
+                  onChange={(e) => setFormData({ ...formData, body: e.target.value })}
+                  required
                   style={{
                     padding: '12px',
                     border: '1px solid #ddd',
@@ -240,42 +320,47 @@ export default function Sidebar({ isOpen, onToggle, activeSection, onSectionChan
                 <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
                   <button
                     type="button"
-                    onClick={() => setShowCompose(false)}
+                    onClick={handleCloseCompose}
+                    disabled={sending}
                     style={{
                       padding: '10px 20px',
                       background: '#f3f4f6',
                       border: 'none',
                       borderRadius: '6px',
-                      cursor: 'pointer'
+                      cursor: sending ? 'not-allowed' : 'pointer',
+                      opacity: sending ? 0.5 : 1
                     }}
                   >
                     Cancel
                   </button>
                   <button
                     type="button"
+                    onClick={handleSaveDraft}
+                    disabled={sending}
                     style={{
                       padding: '10px 20px',
-                      background: '#6b7280',
+                      background: sending ? '#ccc' : '#6b7280',
                       color: '#fff',
                       border: 'none',
                       borderRadius: '6px',
-                      cursor: 'pointer'
+                      cursor: sending ? 'not-allowed' : 'pointer'
                     }}
                   >
-                    Save Draft
+                    {sending ? 'Saving...' : 'Save Draft'}
                   </button>
                   <button
                     type="submit"
+                    disabled={sending}
                     style={{
                       padding: '10px 20px',
-                      background: '#0b6efd',
+                      background: sending ? '#ccc' : '#0b6efd',
                       color: '#fff',
                       border: 'none',
                       borderRadius: '6px',
-                      cursor: 'pointer'
+                      cursor: sending ? 'not-allowed' : 'pointer'
                     }}
                   >
-                    Send
+                    {sending ? 'Sending...' : 'Send'}
                   </button>
                 </div>
               </form>

@@ -22,14 +22,14 @@ export default function UserDashboard() {
   const loadDashboardData = async () => {
     try {
       const [inboxRes, sentRes, draftsRes] = await Promise.all([
-        mailService.getInbox().catch(() => ({ data: [] })),
-        mailService.getSent().catch(() => ({ data: [] })),
-        mailService.getDrafts().catch(() => ({ data: [] }))
+        mailService.getInbox().catch(() => ({ mails: [], count: 0 })),
+        mailService.getSent().catch(() => ({ mails: [], count: 0 })),
+        mailService.getDrafts().catch(() => ({ mails: [], count: 0 }))
       ]);
 
-      const inbox = inboxRes.data || inboxRes.mails || [];
-      const sent = sentRes.data || sentRes.mails || [];
-      const drafts = draftsRes.data || draftsRes.mails || [];
+      const inbox = inboxRes.mails || inboxRes.data || [];
+      const sent = sentRes.mails || sentRes.data || [];
+      const drafts = draftsRes.mails || draftsRes.data || [];
 
       const today = new Date().toDateString();
       const sentToday = sent.filter(mail => 
@@ -52,15 +52,48 @@ export default function UserDashboard() {
     }
   };
 
+  const handleMarkAsRead = async (mailId) => {
+    try {
+      await mailService.markAsRead(mailId);
+      toast.success('Mail marked as read');
+      loadDashboardData();
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to mark as read');
+    }
+  };
+
+  const handleDeleteMail = async (mailId) => {
+    if (!window.confirm('Are you sure you want to delete this email?')) {
+      return;
+    }
+    
+    try {
+      await mailService.deleteMail(mailId);
+      toast.success('Mail deleted successfully');
+      // Refresh dashboard data
+      loadDashboardData();
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to delete mail');
+    }
+  };
+
   const handleCompose = async (mailData) => {
     try {
-      await mailService.compose(mailData);
+      const composeMail = {
+        toEmail: mailData.to,
+        subject: mailData.subject,
+        body: mailData.body,
+        isDraft: false
+      };
+
+      const result = await mailService.composeMail(composeMail);
+      console.log('Mail sent successfully:', result);
       setShowCompose(false);
       toast.success('Email sent successfully!');
       loadDashboardData();
     } catch (error) {
       console.error('Error sending mail:', error);
-      toast.error('Failed to send email');
+      toast.error(error.response?.data?.message || 'Failed to send email');
       throw error;
     }
   };
@@ -249,12 +282,52 @@ export default function UserDashboard() {
                       {mail.body?.substring(0, 120)}...
                     </p>
                   </div>
-                  <div style={{ textAlign: 'right', marginLeft: '20px' }}>
-                    <div style={{ color: '#666', fontSize: '12px', marginBottom: '8px' }}>
-                      {new Date(mail.createdAt).toLocaleDateString()}
+                  <div style={{ textAlign: 'right', marginLeft: '20px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <div>
+                      <div style={{ color: '#666', fontSize: '12px', marginBottom: '4px' }}>
+                        {new Date(mail.createdAt).toLocaleDateString()}
+                      </div>
+                      <div style={{ color: '#666', fontSize: '11px' }}>
+                        {new Date(mail.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </div>
                     </div>
-                    <div style={{ color: '#666', fontSize: '11px' }}>
-                      {new Date(mail.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    <div style={{ display: 'flex', gap: '5px', flexDirection: 'column' }}>
+                      {!mail.isRead && !mail.read && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleMarkAsRead(mail._id);
+                          }}
+                          style={{
+                            background: '#10b981',
+                            color: '#fff',
+                            border: 'none',
+                            padding: '4px 8px',
+                            borderRadius: '4px',
+                            fontSize: '11px',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Mark Read
+                        </button>
+                      )}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteMail(mail._id);
+                        }}
+                        style={{
+                          background: '#ef4444',
+                          color: '#fff',
+                          border: 'none',
+                          padding: '4px 8px',
+                          borderRadius: '4px',
+                          fontSize: '11px',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        Delete
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -325,8 +398,16 @@ function ComposeForm({ onSend, onCancel }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log('ComposeForm handleSubmit called with:', formData);
+    
+    if (!formData.to || !formData.subject || !formData.body) {
+      console.log('Form validation failed - missing fields');
+      return;
+    }
+    
     setSending(true);
     try {
+      console.log('Calling onSend with:', formData);
       await onSend(formData);
     } catch (error) {
       console.error('Error sending email:', error);
@@ -395,6 +476,7 @@ function ComposeForm({ onSend, onCancel }) {
           <button
             type="submit"
             disabled={sending}
+            onClick={() => console.log('Send button clicked, form data:', formData)}
             style={{
               padding: '10px 20px',
               background: sending ? '#ccc' : '#0b6efd',

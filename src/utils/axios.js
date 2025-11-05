@@ -11,12 +11,18 @@ instance.interceptors.request.use((config) => {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
+}, (error) => {
+  console.error('Request interceptor error:', error);
+  return Promise.reject(error);
 });
 
 // Handle response errors globally
 instance.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    return response;
+  },
   (error) => {
+    
     // Only redirect on 401 if we have a token (authenticated user)
     if (error.response?.status === 401 && localStorage.getItem('token')) {
       // Token expired or invalid for authenticated user

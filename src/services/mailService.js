@@ -8,6 +8,7 @@ export const getInbox = async () => {
 
 export const getSent = async () => {
   const response = await axios.get(API_ENDPOINTS.MAIL_SENT);
+  console.log('getSent response:', response.data);
   return response.data;
 };
 
