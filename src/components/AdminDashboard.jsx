@@ -311,7 +311,7 @@ export default function AdminDashboard() {
                         onClick={() => handleViewUserEmails(userData._id)}
                         style={{
                           padding: '6px 12px',
-                          background: '#3b82f6',
+                          background: '#22c55e',
                           color: '#fff',
                           border: 'none',
                           borderRadius: '6px',
@@ -451,7 +451,7 @@ export default function AdminDashboard() {
                       <div className="flex-responsive" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '15px' }}>
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px', flexWrap: 'wrap' }}>
-                            <span style={{ fontWeight: '600', color: '#0b6efd', fontSize: '14px' }}>
+                            <span style={{ fontWeight: '600', color: '#10b981', fontSize: '14px' }}>
                               From: {email.sender?.name || email.sender?.email || email.from || 'Unknown'}
                             </span>
                             <span style={{ fontWeight: '600', color: '#10b981', fontSize: '14px' }}>

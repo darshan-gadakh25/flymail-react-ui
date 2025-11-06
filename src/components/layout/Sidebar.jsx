@@ -164,7 +164,7 @@ export default function Sidebar({ isOpen, onToggle, activeSection, onSectionChan
             onClick={() => setShowCompose(true)}
             style={{
               width: '100%',
-              background: '#0b6efd',
+              background: '#10b981',
               color: '#fff',
               border: 'none',
               padding: '15px',
@@ -195,7 +195,7 @@ export default function Sidebar({ isOpen, onToggle, activeSection, onSectionChan
                       justifyContent: 'space-between',
                       padding: '12px 16px',
                       background: activeSection === item.id ? '#f0f7ff' : 'transparent',
-                      color: activeSection === item.id ? '#0b6efd' : '#333',
+                      color: activeSection === item.id ? '#10b981' : '#333',
                       border: 'none',
                       borderRadius: '8px',
                       cursor: 'pointer',
@@ -353,7 +353,7 @@ export default function Sidebar({ isOpen, onToggle, activeSection, onSectionChan
                     disabled={sending}
                     style={{
                       padding: '10px 20px',
-                      background: sending ? '#ccc' : '#0b6efd',
+                      background: sending ? '#ccc' : '#10b981',
                       color: '#fff',
                       border: 'none',
                       borderRadius: '6px',

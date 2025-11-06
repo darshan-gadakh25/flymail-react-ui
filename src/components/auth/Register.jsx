@@ -107,7 +107,7 @@ export default function Register() {
           type="submit" 
           style={{
             ...styles.button,
-            background: loading ? "#ccc" : "#0b6efd",
+            background: loading ? "#ccc" : "#10b981",
             cursor: loading ? "not-allowed" : "pointer",
           }} 
           disabled={loading}
@@ -155,7 +155,7 @@ const styles = {
   button: {
     width: "100%",
     padding: "10px",
-    background: "#0b6efd",
+    background: "#10b981",
     color: "white",
     border: "none",
     borderRadius: "8px",
@@ -170,7 +170,7 @@ const styles = {
     color: "#666",
   },
   linkText: {
-    color: "#0b6efd",
+    color: "#10b981",
     textDecoration: "none",
     fontWeight: "500",
   },

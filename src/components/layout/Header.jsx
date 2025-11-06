@@ -31,7 +31,7 @@ export default function Header({ onMenuClick }) {
         >
           ☰
         </button>
-        <h1 style={{ color: '#0b6efd', fontSize: '24px', fontWeight: 'bold', margin: 0 }}>FlyMail</h1>
+        <h1 style={{ color: '#10b981', fontSize: '24px', fontWeight: 'bold', margin: 0 }}>FlyMail</h1>
       </div>
       
       <div style={{ position: 'relative' }}>
@@ -52,7 +52,7 @@ export default function Header({ onMenuClick }) {
             width: '32px',
             height: '32px',
             borderRadius: '50%',
-            background: '#0b6efd',
+            background: '#10b981',
             color: '#fff',
             display: 'flex',
             alignItems: 'center',
@@ -82,7 +82,7 @@ export default function Header({ onMenuClick }) {
             <div style={{ padding: '15px', borderBottom: '1px solid #e5e7eb' }}>
               <div style={{ fontWeight: '500', fontSize: '14px' }}>{user?.name}</div>
               <div style={{ color: '#666', fontSize: '12px' }}>{user?.email}</div>
-              <div style={{ color: '#0b6efd', fontSize: '12px', textTransform: 'capitalize' }}>{user?.role}</div>
+              <div style={{ color: '#10b981', fontSize: '12px', textTransform: 'capitalize' }}>{user?.role}</div>
             </div>
             <button
               onClick={() => {

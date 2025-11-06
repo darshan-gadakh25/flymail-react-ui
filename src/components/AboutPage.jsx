@@ -29,14 +29,14 @@ export default function AboutPage() {
           justifyContent: 'space-between',
           alignItems: 'center',
         }}>
-          <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#0b6efd' }}>
+          <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#10b981' }}>
             <h2>FlyMail</h2>
           </div>
           <div style={{ display: 'flex', gap: '30px' }}>
             <Link to="/" style={{ textDecoration: 'none', color: '#333', fontSize: '16px', fontWeight: '500' }}>
               Home
             </Link>
-            <Link to="/about" style={{ textDecoration: 'none', color: '#0b6efd', fontSize: '16px', fontWeight: '500' }}>
+            <Link to="/about" style={{ textDecoration: 'none', color: '#10b981', fontSize: '16px', fontWeight: '500' }}>
               About Us
             </Link>
             <Link to="/contact" style={{ textDecoration: 'none', color: '#333', fontSize: '16px', fontWeight: '500' }}>
@@ -62,7 +62,7 @@ export default function AboutPage() {
             <button
               onClick={() => openAuthModal('register')}
               style={{
-                background: '#0b6efd',
+                background: '#10b981',
                 color: '#fff',
                 fontSize: '16px',
                 fontWeight: '500',

@@ -152,7 +152,7 @@ export default function DashboardPage({ activeSection = 'dashboard', onSectionCh
                       <span style={{
                         width: '8px',
                         height: '8px',
-                        background: '#3b82f6',
+                        background: '#22c55e',
                         borderRadius: '50%'
                       }} />
                     )}

@@ -35,7 +35,7 @@ export default function ContactPage() {
           }}
         >
           <div
-            style={{ fontSize: "24px", fontWeight: "bold", color: "#0b6efd" }}
+            style={{ fontSize: "24px", fontWeight: "bold", color: "#10b981" }}
           >
             <h2>📧 FlyMail</h2>
           </div>
@@ -93,7 +93,7 @@ export default function ContactPage() {
             <button
               onClick={() => openAuthModal("register")}
               style={{
-                background: "#0b6efd",
+                background: "#10b981",
                 color: "#fff",
                 fontSize: "16px",
                 fontWeight: "500",
@@ -189,7 +189,7 @@ export default function ContactPage() {
               style={{
                 fontSize: "28px",
                 marginBottom: "20px",
-                color: "#0b6efd",
+                color: "#10b981",
               }}
             >
               Send us a Message
@@ -259,7 +259,7 @@ export default function ContactPage() {
               <button
                 type="submit"
                 style={{
-                  background: "#0b6efd",
+                  background: "#10b981",
                   color: "#fff",
                   padding: "15px 40px",
                   borderRadius: "8px",

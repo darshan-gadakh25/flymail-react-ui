@@ -5,7 +5,7 @@ import AuthModal from './auth/AuthModal';
 export default function LandingPage() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authMode, setAuthMode] = useState('login');
-  const [ setWindowWidth] = useState(window.innerWidth);
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);
@@ -47,7 +47,7 @@ export default function LandingPage() {
           }}
         >
           <div
-            style={{ fontSize: "24px", fontWeight: "bold", color: "#0b6efd" }}
+            style={{ fontSize: "24px", fontWeight: "bold", color: "#059669" }}
           >
             <h2> FlyMail</h2>
           </div>
@@ -108,7 +108,7 @@ export default function LandingPage() {
             <button
               onClick={() => openAuthModal('register')}
               style={{
-                background: "#0b6efd",
+                background: "#059669",
                 color: "#fff",
                 fontSize: window.innerWidth > 480 ? "16px" : "14px",
                 fontWeight: "500",
@@ -171,7 +171,7 @@ export default function LandingPage() {
               onClick={() => openAuthModal('register')}
               style={{
                 background: "#fff",
-                color: "#0b6efd",
+                color: "#059669",
                 padding: window.innerWidth > 480 ? "15px 40px" : "12px 30px",
                 borderRadius: "8px",
                 fontSize: window.innerWidth > 480 ? "18px" : "16px",

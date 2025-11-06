@@ -260,7 +260,7 @@ export default function UserDashboard() {
                         <span style={{
                           width: '8px',
                           height: '8px',
-                          background: '#3b82f6',
+                          background: '#22c55e',
                           borderRadius: '50%'
                         }} />
                       )}
@@ -479,7 +479,7 @@ function ComposeForm({ onSend, onCancel }) {
             onClick={() => console.log('Send button clicked, form data:', formData)}
             style={{
               padding: '10px 20px',
-              background: sending ? '#ccc' : '#0b6efd',
+              background: sending ? '#ccc' : '#10b981',
               color: '#fff',
               border: 'none',
               borderRadius: '6px',

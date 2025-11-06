@@ -239,7 +239,7 @@ const styles = {
   },
   sendButton: {
     padding: '10px 20px',
-    background: '#0b6efd',
+    background: '#10b981',
     color: 'white',
     border: 'none',
     borderRadius: '6px',
