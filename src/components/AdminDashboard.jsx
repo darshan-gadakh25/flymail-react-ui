@@ -68,7 +68,7 @@ export default function AdminDashboard() {
       setTimeout(() => loadAdminData(), 500);
     } catch (error) {
       console.error('Error toggling user status:', error);
-      toast.error('Failed to update user status');
+      toast.error('Can not update admin status');
     }
   };
 

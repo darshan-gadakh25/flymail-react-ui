@@ -258,7 +258,7 @@ export default function AuthModal({ mode, onClose, onSwitchMode }) {
                 />
               </div>
 
-              <div>
+              {/* <div>
                 <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#333' }}>
                   Role
                 </label>
@@ -277,7 +277,7 @@ export default function AuthModal({ mode, onClose, onSwitchMode }) {
                   <option value="user">User</option>
                   <option value="admin">Admin</option>
                 </select>
-              </div>
+              </div> */}
             </>
           )}
 
@@ -416,28 +416,17 @@ export default function AuthModal({ mode, onClose, onSwitchMode }) {
                   setForgotData({ email: '', otp: '', newPassword: '', confirmPassword: '' });
                 }
               } catch (error) {
-                console.error('AuthModal forgot password error:', error);
+                console.log('Error response:', error.response);
                 let errorMessage = 'Failed to process request';
-                
-                if (error.response?.data?.message) {
-                  errorMessage = error.response.data.message;
-                } else if (error.response?.data?.error) {
-                  errorMessage = error.response.data.error;
-                } else if (error.response?.data) {
-                  const responseData = error.response.data;
-                  if (typeof responseData === 'string') {
-                    // Extract error from HTML response
-                    const htmlMatch = responseData.match(/Error: ([^<]+)/);
-                    if (htmlMatch) {
-                      errorMessage = htmlMatch[1].trim();
-                    } else {
-                      errorMessage = responseData;
-                    }
+                if (error.response?.data) {
+                  if (typeof error.response.data === 'string' && error.response.data.includes('User not found')) {
+                    errorMessage = 'User not found. Please check your email address.';
+                  } else if (error.response.data.message) {
+                    errorMessage = error.response.data.message;
+                  } else if (error.response.data.error) {
+                    errorMessage = error.response.data.error;
                   }
-                } else if (error.message) {
-                  errorMessage = error.message;
                 }
-                
                 toast.error(errorMessage);
               } finally {
                 setForgotLoading(false);

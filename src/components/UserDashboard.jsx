@@ -17,6 +17,8 @@ export default function UserDashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [selectedMail, setSelectedMail] = useState(null);
+  const [showMailViewer, setShowMailViewer] = useState(false);
 
   useEffect(() => {
     loadDashboardData();
@@ -366,7 +368,7 @@ export default function UserDashboard() {
                           color: '#333',
                           fontSize: '16px'
                         }}>
-                          {mail.from || 'Unknown Sender'}
+                          {mail.sender?.name || mail.fromName || mail.from?.split('@')[0] || mail.from || 'Unknown Sender'}
                         </span>
                         {!mail.isRead && (
                           <span style={{
@@ -428,6 +430,13 @@ export default function UserDashboard() {
                 }}
                 onMouseEnter={(e) => e.target.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)'}
                 onMouseLeave={(e) => e.target.style.boxShadow = 'none'}
+                onClick={() => {
+                  setSelectedMail(mail);
+                  setShowMailViewer(true);
+                  if (!mail.isRead) {
+                    handleMarkAsRead(mail._id);
+                  }
+                }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                   <div style={{ flex: 1 }}>
@@ -437,7 +446,7 @@ export default function UserDashboard() {
                         color: '#333',
                         fontSize: '16px'
                       }}>
-                        {mail.from || 'Unknown Sender'}
+                        {mail.sender?.name || mail.fromName || mail.from?.split('@')[0] || mail.from || 'Unknown Sender'}
                       </span>
                       {!mail.isRead && (
                         <span style={{
@@ -564,6 +573,140 @@ export default function UserDashboard() {
               </button>
             </div>
             <ComposeForm onSend={handleCompose} onCancel={() => setShowCompose(false)} />
+          </div>
+        </div>
+      )}
+      
+      {showMailViewer && selectedMail && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0,0,0,0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+          padding: '20px'
+        }}>
+          <div style={{
+            background: '#fff',
+            borderRadius: '12px',
+            width: '100%',
+            maxWidth: '800px',
+            maxHeight: '90vh',
+            overflow: 'auto',
+            boxShadow: '0 10px 30px rgba(0,0,0,0.3)'
+          }}>
+            <div style={{
+              padding: '20px',
+              borderBottom: '1px solid #e5e7eb',
+              background: '#f8f9fa'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div style={{ flex: 1 }}>
+                  <h2 style={{
+                    margin: '0 0 10px 0',
+                    fontSize: '24px',
+                    fontWeight: 'bold',
+                    color: '#333'
+                  }}>
+                    {selectedMail.subject || 'No Subject'}
+                  </h2>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '15px', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontWeight: '600', color: '#666' }}>From:</span>
+                      <span style={{ color: '#333' }}>
+                        {selectedMail.sender?.name || selectedMail.fromName || selectedMail.from?.split('@')[0] || selectedMail.from || 'Unknown'}
+                        {(selectedMail.sender?.email || selectedMail.from) && (
+                          <span style={{ color: '#666', fontSize: '14px', marginLeft: '8px' }}>({selectedMail.sender?.email || selectedMail.from})</span>
+                        )}
+                      </span>
+                    </div>
+                    {selectedMail.to && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontWeight: '600', color: '#666' }}>To:</span>
+                        <span style={{ color: '#333' }}>
+                          {selectedMail.receiver?.name || selectedMail.toName || selectedMail.to?.split('@')[0] || selectedMail.to}
+                          {(selectedMail.receiver?.email || selectedMail.to) && (
+                            <span style={{ color: '#666', fontSize: '14px', marginLeft: '8px' }}>({selectedMail.receiver?.email || selectedMail.to})</span>
+                          )}
+                        </span>
+                      </div>
+                    )}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontWeight: '600', color: '#666' }}>Date:</span>
+                      <span style={{ color: '#333' }}>
+                        {new Date(selectedMail.createdAt).toLocaleDateString('en-US', {
+                          weekday: 'long',
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    setShowMailViewer(false);
+                    setSelectedMail(null);
+                  }}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    fontSize: '24px',
+                    cursor: 'pointer',
+                    color: '#666'
+                  }}
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+            
+            <div style={{
+              padding: '30px',
+              lineHeight: '1.6',
+              fontSize: '16px',
+              color: '#333'
+            }}>
+              <div style={{
+                whiteSpace: 'pre-wrap',
+                wordBreak: 'break-word'
+              }}>
+                {selectedMail.body || 'No content'}
+              </div>
+            </div>
+            
+            <div style={{
+              padding: '20px',
+              borderTop: '1px solid #e5e7eb',
+              background: '#f8f9fa',
+              display: 'flex',
+              justifyContent: 'flex-end'
+            }}>
+              <button
+                onClick={() => {
+                  setShowMailViewer(false);
+                  setSelectedMail(null);
+                }}
+                style={{
+                  background: '#6b7280',
+                  color: '#fff',
+                  border: 'none',
+                  padding: '10px 20px',
+                  borderRadius: '6px',
+                  cursor: 'pointer'
+                }}
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}
