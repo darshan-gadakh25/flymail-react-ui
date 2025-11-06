@@ -14,6 +14,9 @@ export default function UserDashboard() {
   const [recentMails, setRecentMails] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCompose, setShowCompose] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
 
   useEffect(() => {
     loadDashboardData();
@@ -109,6 +112,44 @@ export default function UserDashboard() {
     }
   };
 
+  const handleSearch = async (query) => {
+    if (!query.trim()) {
+      setSearchResults([]);
+      setSearchQuery('');
+      return;
+    }
+    
+    setIsSearching(true);
+    try {
+      console.log('Searching for:', query);
+      const response = await mailService.searchMails(query);
+      console.log('Search results:', response);
+      
+      const results = response.mails || response.data || [];
+      setSearchResults(results);
+      
+      if (results.length === 0) {
+        toast.info(`No results found for "${query}"`);
+      } else {
+        toast.success(`Found ${results.length} result(s) for "${query}"`);
+      }
+    } catch (error) {
+      console.error('Error searching mails:', error);
+      let errorMessage = 'Failed to search emails';
+      
+      if (error.response?.data?.error) {
+        errorMessage = error.response.data.error;
+      } else if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      }
+      
+      toast.error(errorMessage);
+      setSearchResults([]);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
   if (loading) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '400px' }}>
@@ -197,7 +238,7 @@ export default function UserDashboard() {
         </div>
       </div>
 
-      <div style={{ marginBottom: '30px' }}>
+      <div style={{ marginBottom: '30px', display: 'flex', gap: '20px', alignItems: 'center', flexWrap: 'wrap' }}>
         <button
           onClick={() => setShowCompose(true)}
           style={{
@@ -217,6 +258,63 @@ export default function UserDashboard() {
         >
           ✏️ Compose New Email
         </button>
+        
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flex: 1, minWidth: '300px' }}>
+          <input
+            type="text"
+            placeholder="Search all emails..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyPress={(e) => {
+              if (e.key === 'Enter') {
+                handleSearch(searchQuery);
+              }
+            }}
+            style={{
+              flex: 1,
+              padding: '12px 15px',
+              border: '1px solid #ddd',
+              borderRadius: '8px',
+              fontSize: '14px',
+              outline: 'none'
+            }}
+          />
+          <button
+            onClick={() => handleSearch(searchQuery)}
+            disabled={isSearching}
+            style={{
+              background: isSearching ? '#ccc' : '#10b981',
+              color: '#fff',
+              border: 'none',
+              padding: '12px 20px',
+              borderRadius: '8px',
+              fontSize: '14px',
+              cursor: isSearching ? 'not-allowed' : 'pointer',
+              fontWeight: '500'
+            }}
+          >
+            {isSearching ? 'Searching...' : '🔍 Search'}
+          </button>
+          {searchQuery && (
+            <button
+              onClick={() => {
+                setSearchQuery('');
+                setSearchResults([]);
+              }}
+              style={{
+                background: '#6b7280',
+                color: '#fff',
+                border: 'none',
+                padding: '12px 15px',
+                borderRadius: '8px',
+                fontSize: '14px',
+                cursor: 'pointer'
+              }}
+            >
+              Clear
+            </button>
+          )}
+        </div>
       </div>
 
       <div style={{
@@ -228,14 +326,88 @@ export default function UserDashboard() {
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
           <h2 style={{ fontSize: '20px', fontWeight: 'bold', color: '#333', margin: 0 }}>
-            Recent Emails
+            {searchQuery ? `Search Results for "${searchQuery}"` : 'Recent Emails'}
           </h2>
           <span style={{ color: '#666', fontSize: '14px' }}>
-            {recentMails.length} of {stats.total} emails
+            {searchQuery ? `${searchResults.length} result(s)` : `${recentMails.length} of ${stats.total} emails`}
           </span>
         </div>
 
-        {recentMails.length === 0 ? (
+        {isSearching ? (
+          <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
+            <div style={{ fontSize: '18px' }}>Searching...</div>
+          </div>
+        ) : searchQuery ? (
+          searchResults.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
+              <div style={{ fontSize: '48px', marginBottom: '20px' }}>🔍</div>
+              <h3 style={{ fontSize: '18px', marginBottom: '10px' }}>No results found</h3>
+              <p>No emails found for "{searchQuery}"</p>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {searchResults.map((mail, index) => (
+                <div
+                  key={mail._id || index}
+                  style={{
+                    padding: '16px',
+                    border: '1px solid #e5e7eb',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    background: mail.isRead ? '#fff' : '#f0f7ff'
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+                        <span style={{
+                          fontWeight: mail.isRead ? '500' : '700',
+                          color: '#333',
+                          fontSize: '16px'
+                        }}>
+                          {mail.from || 'Unknown Sender'}
+                        </span>
+                        {!mail.isRead && (
+                          <span style={{
+                            width: '8px',
+                            height: '8px',
+                            background: '#22c55e',
+                            borderRadius: '50%'
+                          }} />
+                        )}
+                      </div>
+                      <h4 style={{
+                        margin: '0 0 8px 0',
+                        fontSize: '16px',
+                        fontWeight: mail.isRead ? '500' : '700',
+                        color: '#333'
+                      }}>
+                        {mail.subject || 'No Subject'}
+                      </h4>
+                      <p style={{
+                        margin: 0,
+                        color: '#666',
+                        fontSize: '14px',
+                        lineHeight: '1.4'
+                      }}>
+                        {mail.body?.substring(0, 120)}...
+                      </p>
+                    </div>
+                    <div style={{ textAlign: 'right', marginLeft: '20px' }}>
+                      <div style={{ color: '#666', fontSize: '12px', marginBottom: '4px' }}>
+                        {new Date(mail.createdAt).toLocaleDateString()}
+                      </div>
+                      <div style={{ color: '#666', fontSize: '11px' }}>
+                        {new Date(mail.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )
+        ) : recentMails.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
             <div style={{ fontSize: '48px', marginBottom: '20px' }}>📭</div>
             <h3 style={{ fontSize: '18px', marginBottom: '10px' }}>No emails yet</h3>

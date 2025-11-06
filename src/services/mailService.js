@@ -48,7 +48,10 @@ export const search = async (query) => {
 };
 
 export const searchMails = async (query) => {
+  console.log('searchMails called with query:', query);
+  console.log('Search endpoint:', API_ENDPOINTS.MAIL_SEARCH(query));
   const response = await axios.get(API_ENDPOINTS.MAIL_SEARCH(query));
+  console.log('searchMails response:', response.data);
   return response.data;
 };
 

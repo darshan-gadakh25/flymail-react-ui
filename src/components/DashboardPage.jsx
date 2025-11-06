@@ -10,6 +10,8 @@ export default function DashboardPage({ activeSection = 'dashboard', onSectionCh
   const [mails, setMails] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedMail, setSelectedMail] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
   const isAdmin = user?.role === 'admin';
 
   const loadMails = async (section = activeSection) => {
@@ -91,6 +93,48 @@ export default function DashboardPage({ activeSection = 'dashboard', onSectionCh
         return renderMailList();
       default:
         return isAdmin ? <AdminDashboard /> : <UserDashboard />;
+    }
+  };
+
+  const handleSearch = async (query) => {
+    if (!query.trim()) {
+      loadMails();
+      return;
+    }
+    
+    setIsSearching(true);
+    try {
+      console.log('Searching for:', query);
+      console.log('Search API endpoint will be:', `/mail/search?q=${query}`);
+      const response = await mailService.searchMails(query);
+      console.log('Search API response:', response);
+      console.log('Search results count:', response.count);
+      console.log('Search results mails:', response.mails);
+      
+      const searchResults = response.mails || response.data || [];
+      console.log('Final search results to display:', searchResults);
+      setMails(searchResults);
+      
+      if (searchResults.length === 0) {
+        toast.info(`No results found for "${query}"`);
+      } else {
+        toast.success(`Found ${searchResults.length} result(s) for "${query}"`);
+      }
+    } catch (error) {
+      console.error('Error searching mails:', error);
+      console.log('Search error response:', error.response);
+      let errorMessage = 'Failed to search emails';
+      
+      if (error.response?.data?.error) {
+        errorMessage = error.response.data.error;
+      } else if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      }
+      
+      toast.error(errorMessage);
+      setMails([]);
+    } finally {
+      setIsSearching(false);
     }
   };
 
