@@ -84,7 +84,18 @@ export default function Sidebar({ isOpen, onToggle, activeSection, onSectionChan
       loadMailCounts();
     } catch (error) {
       console.error('Error sending mail from sidebar:', error);
-      toast.error(error.response?.data?.message || 'Failed to send email');
+      console.log('Error response data:', error.response?.data);
+      let errorMessage = 'Failed to send email';
+      
+      if (error.response?.data?.error) {
+        errorMessage = error.response.data.error;
+      } else if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      toast.error(errorMessage);
     } finally {
       setSending(false);
     }
@@ -115,7 +126,18 @@ export default function Sidebar({ isOpen, onToggle, activeSection, onSectionChan
       loadMailCounts();
     } catch (error) {
       console.error('Error saving draft from sidebar:', error);
-      toast.error(error.response?.data?.message || 'Failed to save draft');
+      console.log('Error response data:', error.response?.data);
+      let errorMessage = 'Failed to save draft';
+      
+      if (error.response?.data?.error) {
+        errorMessage = error.response.data.error;
+      } else if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      toast.error(errorMessage);
     } finally {
       setSending(false);
     }

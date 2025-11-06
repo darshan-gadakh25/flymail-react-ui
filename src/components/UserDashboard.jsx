@@ -93,7 +93,18 @@ export default function UserDashboard() {
       loadDashboardData();
     } catch (error) {
       console.error('Error sending mail:', error);
-      toast.error(error.response?.data?.message || 'Failed to send email');
+      console.log('Error response data:', error.response?.data);
+      let errorMessage = 'Failed to send email';
+      
+      if (error.response?.data?.error) {
+        errorMessage = error.response.data.error;
+      } else if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      toast.error(errorMessage);
       throw error;
     }
   };

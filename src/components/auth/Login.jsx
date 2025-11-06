@@ -70,7 +70,29 @@ export default function Login() {
         setForgotData({ email: '', otp: '', newPassword: '', confirmPassword: '' });
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to process request');
+      console.error('Login forgot password error:', error);
+      let errorMessage = 'Failed to process request';
+      
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.response?.data?.error) {
+        errorMessage = error.response.data.error;
+      } else if (error.response?.data) {
+        const responseData = error.response.data;
+        if (typeof responseData === 'string') {
+          // Extract error from HTML response
+          const htmlMatch = responseData.match(/Error: ([^<]+)/);
+          if (htmlMatch) {
+            errorMessage = htmlMatch[1].trim();
+          } else {
+            errorMessage = responseData;
+          }
+        }
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      toast.error(errorMessage);
     } finally {
       setForgotLoading(false);
     }

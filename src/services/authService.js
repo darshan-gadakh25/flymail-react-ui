@@ -21,17 +21,35 @@ export const logout = () => {
 };
 
 export const requestOTP = async (email) => {
-  const response = await axios.post(API_ENDPOINTS.REQUEST_OTP, { email });
-  return response.data;
+  console.log('requestOTP called with email:', email);
+  console.log('OTP endpoint:', API_ENDPOINTS.REQUEST_OTP);
+  try {
+    const response = await axios.post(API_ENDPOINTS.REQUEST_OTP, { email });
+    console.log('requestOTP success response:', response.data);
+    return response.data;
+  } catch (error) {
+    console.log('requestOTP error response:', error.response);
+    console.log('requestOTP error data:', error.response?.data);
+    throw error;
+  }
 };
 
 export const resetPassword = async (email, otp, newPassword) => {
-  const response = await axios.put(API_ENDPOINTS.RESET_PASSWORD, {
-    email,
-    otp,
-    newPassword,
-  });
-  return response.data;
+  console.log('resetPassword called with:', { email, otp, newPassword: '***' });
+  console.log('Reset password endpoint:', API_ENDPOINTS.RESET_PASSWORD);
+  try {
+    const response = await axios.put(API_ENDPOINTS.RESET_PASSWORD, {
+      email,
+      otp,
+      newPassword,
+    });
+    console.log('resetPassword success response:', response.data);
+    return response.data;
+  } catch (error) {
+    console.log('resetPassword error response:', error.response);
+    console.log('resetPassword error data:', error.response?.data);
+    throw error;
+  }
 };
 
 export const getCurrentUser = () => {
