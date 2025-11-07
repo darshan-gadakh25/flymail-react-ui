@@ -56,15 +56,27 @@ export default function AuthModal({ mode, onClose, onSwitchMode }) {
         onClose();
         navigate('/dashboard');
       } else {
-        if (formData.password !== formData.confirmPassword) {
-          const errorMsg = 'Passwords do not match';
+        // Name validation - no numbers allowed
+        if (/\d/.test(formData.name)) {
+          const errorMsg = 'Name cannot contain numbers';
           setError(errorMsg);
           toast.error(errorMsg);
           setLoading(false);
           return;
         }
-        if (formData.password.length < 6) {
-          const errorMsg = 'Password must be at least 6 characters';
+        
+        // Strong password validation
+        const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+        if (!strongPasswordRegex.test(formData.password)) {
+          const errorMsg = 'Password must be at least 8 characters with uppercase, lowercase, number and special character';
+          setError(errorMsg);
+          toast.error(errorMsg);
+          setLoading(false);
+          return;
+        }
+        
+        if (formData.password !== formData.confirmPassword) {
+          const errorMsg = 'Passwords do not match';
           setError(errorMsg);
           toast.error(errorMsg);
           setLoading(false);

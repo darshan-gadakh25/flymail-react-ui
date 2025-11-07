@@ -169,7 +169,7 @@ export default function ContactPage() {
             >
               <div style={{ fontSize: "36px", marginBottom: "15px" }}>📞</div>
               <h3>Phone</h3>
-              <p>+1 (555) 123-4567</p>
+              <p>+91 7517998340</p>
             </div>
             <div
               style={{
@@ -181,7 +181,7 @@ export default function ContactPage() {
             >
               <div style={{ fontSize: "36px", marginBottom: "15px" }}>📍</div>
               <h3>Address</h3>
-              <p>123 Tech Street, Digital City, DC 12345</p>
+              <p>Raintree Marg, near Bharati Vidyapeeth, Sector 7, CBD Belapur, Navi Mumbai, Maharashtra 400614</p>
             </div>
           </div>
           <section style={{ marginTop: "40px" }}>
